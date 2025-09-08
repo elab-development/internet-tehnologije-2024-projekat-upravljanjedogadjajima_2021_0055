@@ -2,6 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +18,28 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/ping', function () {
+    return response()->json(['pong' => true]);
+});
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// Autentifikacija
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+// Javne rute
+Route::apiResource('events', EventController::class)->only(['index', 'show']);
+Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
+Route::apiResource('users', UserController::class)->only(['index', 'show']);
+
+// Privatne rute
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('events', EventController::class)->only(['store', 'update', 'destroy']);
+    Route::apiResource('categories', CategoryController::class)->only(['store', 'update', 'destroy']);
+    Route::apiResource('users', UserController::class)->only(['store', 'update', 'destroy']);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
