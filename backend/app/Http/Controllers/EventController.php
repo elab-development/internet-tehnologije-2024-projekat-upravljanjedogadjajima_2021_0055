@@ -10,7 +10,7 @@ class EventController extends Controller
     // Prikazivanje svih događaja
     public function index()
     {
-        $events = Event::with(['user', 'category'])->get();
+        $events = Event::with(['user', 'category'])->orderBy('starts_at')->get();
         return response()->json($events, 200);
     }
 
@@ -22,12 +22,14 @@ class EventController extends Controller
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
+            'starts_at'   => 'required|date',
         ]);
 
         $event = Event::create([
             'name'        => $validated['name'],
             'description' => $validated['description'] ?? null,
             'category_id' => $validated['category_id'],
+            'starts_at'   => $validated['starts_at'],
             'user_id'     => $request->user()->id, // ← iz tokena
         ]);
 
@@ -52,6 +54,7 @@ class EventController extends Controller
             'name'        => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'sometimes|required|exists:categories,id',
+            'starts_at'   => 'sometimes|required|date',
         ]);
 
         // Ažuriramo SAMO dozvoljena polja
