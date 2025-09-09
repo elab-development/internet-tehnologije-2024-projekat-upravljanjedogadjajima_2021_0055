@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\Category;
 
 class CategoryController extends Controller
@@ -10,58 +11,54 @@ class CategoryController extends Controller
     // Prikazivanje svih kategorija
     public function index()
     {
-        return response()->json(Category::all(), 200);
+        $categories = Category::all();
+        return response()->json($categories, 200);
     }
 
     // Kreiranje nove kategorije
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
         ]);
 
-        $category = Category::create($request->all());
+        $category = Category::create([
+            'name' => $validated['name'],
+        ]);
 
         return response()->json($category, 201);
     }
 
-    // Prikazivanje jedne kategorije
-    public function show($id)
+    public function show(Category $category)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
-            return response()->json(['error' => 'Category not found'], 404);
-        }
-
         return response()->json($category, 200);
     }
 
     // Ažuriranje kategorije
-    public function update(Request $request, $id)
+    public function update(Request $request, Category $category)
     {
-        $category = Category::find($id);
+        $validated = $request->validate([
+            'name' => [
+                'sometimes', 'required', 'string', 'max:255',
+                Rule::unique('categories', 'name')->ignore($category->id),
+            ],
+        ]);
 
-        if (!$category) {
-            return response()->json(['error' => 'Category not found'], 404);
-        }
-
-        $category->update($request->all());
+        $category->update($validated);
 
         return response()->json($category, 200);
     }
 
     // Brisanje kategorije
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
-            return response()->json(['error' => 'Category not found'], 404);
+        if($category->events()->exist()) {
+            return response()->json([
+                'error' => 'Cannot delete category with existing events!'
+            ], 409);
         }
 
         $category->delete();
-
-        return response()->json(['message' => 'Category deleted successfully'], 200);
+        return response()->json(['message' => 'Category deleted successfully.'], 200);
     }
 }
