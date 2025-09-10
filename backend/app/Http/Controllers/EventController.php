@@ -99,4 +99,31 @@ class EventController extends Controller
 
         return response()->json(['message' => 'Event deleted successfully'], 200);
     }
+
+    public function exportCsv(Request $request)
+    {
+        $events = \App\Models\Event::with(['user','category'])->orderBy('starts_at')->get();
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="events.csv"',
+        ];
+
+        $callback = function () use ($events) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['id','name','starts_at','category','user']);
+            foreach ($events as $e) {
+                fputcsv($out, [
+                    $e->id,
+                    $e->name,
+                    optional($e->starts_at)->format('Y-m-d H:i:s'),
+                    optional($e->category)->name,
+                    optional($e->user)->name,
+                ]);
+            }
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
