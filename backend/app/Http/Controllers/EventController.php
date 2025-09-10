@@ -8,10 +8,35 @@ use App\Models\Event;
 class EventController extends Controller
 {
     // Prikazivanje svih događaja
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::with(['user', 'category'])->orderBy('starts_at')->get();
-        return response()->json($events, 200);
+        $request->validate([
+        'page'        => 'sometimes|integer|min:1',
+        'per_page'    => 'sometimes|integer|min:1|max:100',
+        'from'        => 'sometimes|date',
+        'to'          => 'sometimes|date',
+        'category_id' => 'sometimes|exists:categories,id',
+        'q'           => 'sometimes|string', // pretraga
+        ]);
+
+        $q = \App\Models\Event::with(['user','category'])
+                                ->whereNotNull('starts_at')
+                                ->orderBy('starts_at');
+
+        if ($request->filled('from')) $q->where('starts_at', '>=', $request->from);
+        if ($request->filled('to'))   $q->where('starts_at', '<=', $request->to);
+        if ($request->filled('category_id')) $q->where('category_id', $request->category_id);
+
+        if ($request->filled('q')) {
+            $term = $request->q;
+            $q->where(function ($qq) use ($term) {
+                $qq->where('name', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%");
+            });
+        }
+
+        $perPage = $request->integer('per_page', 10);
+        return response()->json($q->paginate($perPage), 200);
     }
 
     // Kreiranje novog događaja
