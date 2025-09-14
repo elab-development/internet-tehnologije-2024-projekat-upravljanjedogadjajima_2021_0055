@@ -62,16 +62,19 @@ class EventController extends Controller
     }
 
     // Prikazivanje jednog događaja
-    public function show($id)
+    public function show(Event $event)
     {
+        $event->load(['user','category']);
         return response()->json($event, 200);
     }
 
     // Ažuriranje događaja
-    public function update(Request $request, $id)
-    {
-        // Dozvoli izmenu samo vlasniku
-        if ($request->user()->id !== $event->user_id) {
+    public function update(Request $request, Event $event)
+    {   
+        $auth = $request->user();
+
+        // Izmena dozvoljena samo vasniku i adminu  
+        if ($auth->id !== $event->user_id && $auth->role !== 'admin') {
             return response()->json(['error' => 'Forbidden'], 403);
         }
 
@@ -89,9 +92,11 @@ class EventController extends Controller
     }
 
     // Brisanje događaja
-    public function destroy($id)
+    public function destroy(Request $request, Event $event)
     {
-        if ($request->user()->id !== $event->user_id) {
+        $auth = $request->user();
+
+        if ($auth->id !== $event->user_id && $auth->role !== 'admin') {
             return response()->json(['error' => 'Forbidden'], 403);
         }
 

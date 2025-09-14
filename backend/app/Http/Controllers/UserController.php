@@ -13,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         return response()->json(
-            User::select('id', 'name', 'email', 'created_at')->get(),
+            User::select('id', 'name', 'email', 'created_at', 'phone_number')->get(),
             200
         );
     }
@@ -25,12 +25,14 @@ class UserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
+            'phone_number' => ['required', 'string', 'max:255'],
         ]);
 
         $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'phone_number' => $validated['phone_number'],
         ]);
 
         return response()->json($user, 201);
@@ -44,7 +46,9 @@ class UserController extends Controller
     // Ažuriranje korisnika
     public function update(Request $request, User $user)
     {
-         if ($request->user()->id !== $user->id) {
+        $auth = $request->user();
+
+         if ($auth->id !== $user->id && $auth->role !== 'admin') {
             return response()->json(['error' => 'Forbidden'], 403);
         }
 
@@ -55,6 +59,7 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'password' => ['sometimes', 'required', 'string', 'min:8'],
+            'phone_number' => ['sometimes', 'required', 'string', 'max:255'],
         ]);
 
         if (isset($validated['password'])) {
@@ -68,8 +73,10 @@ class UserController extends Controller
 
     // Brisanje korisnika
     public function destroy(Request $request, User $user)
-    {
-        if ($request->user()->id !== $user->id) {
+    {   
+        $auth = $request->user();
+
+        if ($auth->id !== $user->id && $auth->role !== 'admin') {
             return response()->json(['error' => 'Forbidden'], 403);
         }
 

@@ -18,7 +18,6 @@ return new class extends Migration
         });
 
         Schema::table('events', function (Blueprint $table) {
-            // Ako je naziv drugačiji, zameni:
             $table->dropUnique('events_category_id_unique');
             $table->index('category_id'); // non-unique index
         });
@@ -27,7 +26,7 @@ return new class extends Migration
         Schema::table('events', function (Blueprint $table) {
             $table->foreign('category_id')
                   ->references('id')->on('categories')
-                  ->cascadeOnDelete(); // po želji
+                  ->cascadeOnDelete();
         });
     }
 

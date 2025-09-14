@@ -52,7 +52,7 @@ class CategoryController extends Controller
     // Brisanje kategorije
     public function destroy(Category $category)
     {
-        if($category->events()->exist()) {
+        if($category->events()->exists()) {
             return response()->json([
                 'error' => 'Cannot delete category with existing events!'
             ], 409);
