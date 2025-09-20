@@ -90,7 +90,7 @@ export default function Login() {
               <input type="checkbox" name="remember" checked={form.remember} onChange={onChange}/>
               <span>Zapamti me</span>
             </label>
-            <Link className="link" to="/register">Nemaš nalog? Registruj se.</Link>
+            <Link className="link" to="/register">Registruj se</Link>
           </div>
           <AppButton type="submit" disabled={loading}>
             {loading ? "Ulogujem..." : "Uloguj me"}
