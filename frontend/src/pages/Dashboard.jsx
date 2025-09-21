@@ -6,7 +6,7 @@ export default function Dashboard() {
   return (
     <div className="page">
       <h1>Dobrodošao, {user?.name || user?.email} 👋</h1>
-      <p>Ovde ide tvoj dashboard.</p>
+      <p>Ovde ide dashboard.</p>
       <AppButton onClick={logout}>Odjava</AppButton>
     </div>
   );

@@ -58,7 +58,7 @@ export default function Login() {
   };
 
   return (
-    <div className="page auth-grid">
+    <div className="page auth-grid login-grid">
       <Card 
         header={<img src={logo} alt="Logo" className="card-logo" />}
         title="Login"

@@ -6,6 +6,9 @@
   --card:#fff; --ink:#222; --muted:#667085;
   --teal:#1593ad; --teal-strong:#0e7d93; --error:#d11f3d;
   --radius:12px; --shadow:0 10px 25px rgba(0,0,0,.08);
+
+  --topbar-h: 60px;
+  --card-w: 520px;
 }
 *{box-sizing:border-box} html,body,#root{height:100%}
 body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--ink)}
@@ -29,7 +32,9 @@ body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-
 }
 .spacer{flex:1}
 .page{max-width:960px;margin:48px auto;padding:0 16px}
-.auth-grid{display:grid;grid-template-columns:minmax(320px,420px);justify-content:center;margin-top:100px;}
+.auth-grid{display:grid;grid-template-columns:minmax(180px,480px);justify-content:center;}
+.login-grid { margin-top: 100px; }
+.register-grid { margin-top: 40px; }
 .card{background:var(--card);box-shadow:var(--shadow);border-radius:16px;padding:28px}
 .card-title{text-align:center;margin:0 0 20px;font-size:28px}
 .field{margin-bottom:14px}
@@ -55,6 +60,6 @@ body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-
 
 .card-logo{
   display:block;
-  height:164px;       /* podesi po želji */
-  margin:4px auto 0px auto; /* centrirano iznad naslova */
+  height:164px;      
+  margin:4px auto 0px auto; 
 }

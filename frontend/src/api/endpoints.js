@@ -33,3 +33,14 @@ export async function postLogout() {
     throw e;
   }
 }
+
+export async function postRegister(body) {
+  try {
+    return await http.post("/api/register", body);
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.post("/register", body);
+    }
+    throw e;
+  }
+}
