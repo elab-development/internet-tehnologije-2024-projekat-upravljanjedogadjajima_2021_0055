@@ -12,7 +12,7 @@
 }
 *{box-sizing:border-box} html,body,#root{height:100%}
 body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--ink)}
-.topbar{position:sticky;top:0;display:flex;gap:16px;align-items:center;padding:12px 24px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.topbar{position:sticky;top:0;display:flex;gap:16px;align-items:center;z-index: 2;padding:12px 24px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06)}
 .brand{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700}
 .navlink{color:var(--primary);text-decoration:none;font-weight:600;position:relative;}
 .navlink::after {
@@ -62,4 +62,103 @@ body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-
   display:block;
   height:164px;      
   margin:4px auto 0px auto; 
+}
+
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center; z-index:50;
+}
+.modal-card{
+  width:min(520px, 94vw); background:#fff; border-radius:16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+  padding:20px;
+}
+.modal-title{ margin:0 0 10px; font-size:20px; font-weight:800 }
+.modal-body{ padding:6px 0 10px }
+.modal-footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:8px }
+
+/* Layout kolona */
+.app-shell{
+  display:grid;
+  grid-template-columns: 260px 1fr 360px;
+  gap:16px;
+  min-height: calc(100dvh - var(--topbar-h, 60px));
+  padding:16px;
+}
+
+/* Sidebar */
+.sidebar {
+  position: sticky;
+  top: calc(var(--topbar-h, 60px) + 16px);
+  z-index: 1;
+  align-self: start;
+  background:#fff; box-shadow:var(--shadow);
+  border-radius:16px; padding:16px;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* Sidebar icon hover efekat */
+.sidebar-icon, .sidebar-icon img, .sidebar-icon svg {
+  transition: transform 0.15s cubic-bezier(.4,2,.6,1);
+}
+.sidebar-icon:hover, .sidebar-icon:hover img, .sidebar-icon:hover svg {
+  transform: scale(1.13);
+}
+
+.sidebar-logo{ height:100px; display:block; margin-left:auto; margin-right:auto; }
+.team-title{
+  color:var(--primary);
+  font-weight:900;
+  font-size:2rem;
+  margin:0 0 20px 0;
+  text-align:center;
+  letter-spacing:2px;
+  text-shadow:0 2px 8px rgba(30,158,194,0.08);
+}
+
+.user-list{ width:100%; display:grid; gap:12px; margin-bottom:14px }
+.user-btn{
+  width:100%; padding:12px 14px;
+  border-radius:14px; border:0; cursor:pointer;
+  background:var(--primary); color:#fff; font-weight:800;
+  box-shadow:0 3px 10px rgba(0,0,0,.08);
+}
+.user-btn.active{ outline:3px solid rgba(30,158,194,.25) }
+
+/* Hover efekat za članove tima */
+.user-btn {
+  transition: transform 0.15s cubic-bezier(.4,2,.6,1);
+}
+.user-btn:hover {
+  transform: scale(1.13);
+}
+
+.sidebar-footer{
+  width:100%; margin-top:auto;
+  display:flex; gap:12px; justify-content:space-between;
+}
+
+.icon-btn{
+  width:auto; height:auto; padding:0; border:0;
+  background:transparent; border-radius:8px;
+  display:inline-flex; align-items:center; justify-content:center;
+  box-shadow:none; cursor:pointer;
+}
+.icon-btn:hover{ background:transparent }
+.icon-btn:active{ transform:none }
+.icon-btn:focus-visible{ outline:2px solid var(--primary); outline-offset:2px }
+
+.icon-btn.disabled{ opacity:.5; cursor:not-allowed; pointer-events:none }
+
+.icon-static{
+  display:block;
+  width:34px; height:34px;          /* po potrebi 32/36 */
+  border-radius:8px;                /* za PNG bez providnih ivica */
+  object-fit:contain;
+}
+
+/* Responsive */
+@media (max-width: 992px){
+  .app-shell{ grid-template-columns: 1fr; }
+  .sidebar{ position:static; order:1 }
 }
