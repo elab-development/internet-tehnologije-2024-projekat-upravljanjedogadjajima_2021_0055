@@ -5,6 +5,7 @@ import Modal from "../components/Modal";
 import UserForm from "../components/UserForm";
 import AppButton from "../components/AppButton";
 import { getUsers, createUser, updateUser, deleteUser } from "../api/endpoints";
+import EventsPanel from "../components/EventsPanel";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -97,7 +98,12 @@ export default function Dashboard() {
 
       <main className="main-col">
         <h1>Dobrodošao, {user?.name || user?.email} 👋</h1>
-        {/* Ovde idu dogadjaji kasnije */}
+        
+        <EventsPanel
+          selectedUserId={selectedId}       // filtriraj po izabranom članu tima (može i null)
+          canCreate={isAdmin}               // samo admin vidi "+"
+          onCreated={() => { /* po potrebi npr. toastić */ }}
+        />
 
       </main>
 

@@ -21,6 +21,12 @@ class UserController extends Controller
     // Kreiranje novog korisnika
     public function store(Request $request)
     {
+        $auth = $request->user();
+
+         if ($auth->role !== 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],

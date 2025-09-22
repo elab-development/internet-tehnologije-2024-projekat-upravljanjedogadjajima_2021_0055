@@ -162,3 +162,60 @@ body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-
   .app-shell{ grid-template-columns: 1fr; }
   .sidebar{ position:static; order:1 }
 }
+
+/* Events kolona (sredina) */
+.events-col{
+  position:relative;
+  background: var(--primary);        /* teal pozadina kao na slici */
+  border-radius: 6px;
+  padding: 18px 12px 80px;           /* dole više prostora zbog FAB dugmeta */
+  min-height: 420px;
+  max-width: 1000px;
+}
+
+/* Event kartica */
+.event-card{
+  background:#fff;
+  border-radius:14px;
+  padding:16px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+  margin: 16px 10px;
+  cursor:pointer;
+  transition: transform 0.15s cubic-bezier(.4,2,.6,1);
+}
+.event-card:hover {
+  transform: scale(1.03);
+}
+.event-title{
+  font-weight:800;
+  font-size:20px;
+  color:#167c93;        /* harmonija sa temom */
+}
+.event-when{ text-align:right; line-height:1.1 }
+.event-day{ font-weight:800; color:#167c93; }
+.event-time{ font-weight:800; color:#167c93; font-size:18px }
+
+.event-add{
+  position:absolute; left:12px; bottom:12px;
+  width:48px; height:48px; border-radius:12px;
+  border:0; background:#fff; color:var(--primary);
+  font-size:28px; line-height:0; font-weight:900;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 22px rgba(0,0,0,.25);
+  cursor:pointer;
+  transition: transform 0.15s cubic-bezier(.4,2,.6,1);
+}
+.event-add:hover {
+  transform: scale(1.15);
+}
+.event-add:active{ transform: translateY(1px) }
+
+/* Custom select arrow right align */
+select.field-input.select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #1293ad22 url('data:image/svg+xml;utf8,<svg fill="%231E9EC2" height="30" viewBox="0 0 20 20" width="30" xmlns="http://www.w3.org/2000/svg"><path d="M7.293 7.293a1 1 0 011.414 0L10 8.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z"/></svg>') no-repeat right 16px center/20px 20px;
+  padding-right: 40px;
+}

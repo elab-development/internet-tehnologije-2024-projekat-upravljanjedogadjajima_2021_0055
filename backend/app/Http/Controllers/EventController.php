@@ -16,7 +16,8 @@ class EventController extends Controller
         'from'        => 'sometimes|date',
         'to'          => 'sometimes|date',
         'category_id' => 'sometimes|exists:categories,id',
-        'q'           => 'sometimes|string', // pretraga
+        'user_id'     => 'sometimes|exists:users,id',
+        'q'           => 'sometimes|string', 
         ]);
 
         $q = \App\Models\Event::with(['user','category'])
@@ -26,6 +27,7 @@ class EventController extends Controller
         if ($request->filled('from')) $q->where('starts_at', '>=', $request->from);
         if ($request->filled('to'))   $q->where('starts_at', '<=', $request->to);
         if ($request->filled('category_id')) $q->where('category_id', $request->category_id);
+        if ($request->filled('user_id'))     $q->where('user_id', $request->query("user_id"));
 
         if ($request->filled('q')) {
             $term = $request->q;

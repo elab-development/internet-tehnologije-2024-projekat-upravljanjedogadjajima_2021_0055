@@ -39,7 +39,6 @@ export default function Sidebar({
         setLoading(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
