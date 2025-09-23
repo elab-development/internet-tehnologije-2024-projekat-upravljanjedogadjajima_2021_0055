@@ -6,6 +6,7 @@ import UserForm from "../components/UserForm";
 import AppButton from "../components/AppButton";
 import { getUsers, createUser, updateUser, deleteUser } from "../api/endpoints";
 import EventsPanel from "../components/EventsPanel";
+import EventDetails from "../components/EventDetails";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -20,6 +21,8 @@ export default function Dashboard() {
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const [selectedEventId, setSelectedEventId] = useState(null);
 
   // učitavanje liste
   useEffect(() => {
@@ -85,11 +88,17 @@ export default function Dashboard() {
     }
   };
 
+ const handleSelectMember = (val) => {
+  const id = Number(val?.id ?? val);
+  setSelectedId(Number.isFinite(id) ? id : null);
+  setSelectedEventId(null); // reset desnog panela
+}; 
+
   return (
     <div className="app-shell">
       <Sidebar
         selectedId={selectedId}
-        onSelect={setSelectedId}
+        onSelect={handleSelectMember}
         onAddUser={() => isAdmin && setOpenCreate(true)}   
         onEditUser={() => isAdmin && setOpenEdit(true)}    
         onDeleteUser={() => isAdmin && setOpenDelete(true)}  
@@ -100,14 +109,16 @@ export default function Dashboard() {
         <h1>Dobrodošao, {user?.name || user?.email} 👋</h1>
         
         <EventsPanel
-          selectedUserId={selectedId}       // filtriraj po izabranom članu tima (može i null)
-          canCreate={isAdmin}               // samo admin vidi "+"
-          onCreated={() => { /* po potrebi npr. toastić */ }}
+          selectedUserId={selectedId}
+          currentEventId={selectedEventId}
+          onSelectEvent={setSelectedEventId}
         />
 
       </main>
 
-      <aside className="right-col">{/* ovde ide detalj događaja kasnije */}</aside>
+      <aside className="right-col">
+        <EventDetails eventId={selectedEventId} />
+      </aside>
 
       {/* CREATE */}
       <Modal open={openCreate} onClose={() => !submitting && setOpenCreate(false)} title="Novi korisnik">

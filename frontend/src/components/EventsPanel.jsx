@@ -6,7 +6,7 @@ import EventForm from "./EventForm";
 import { useAuth } from "../auth/AuthContext";
 import addEventIcon from "../assets/add-event.png";
 
-export default function EventsPanel({ selectedUserId }) {
+export default function EventsPanel({ selectedUserId, onSelectEvent, currentEventId }) {
   const { user } = useAuth();
   const authUserId = user?.id;
 
@@ -90,17 +90,26 @@ export default function EventsPanel({ selectedUserId }) {
 
   return (
     <section className="events-col" style={{ position: "relative" }}>
-      {!selectedUserId && <div className="muted">Izaberi člana tima sa leve strane.</div>}
-      {selectedUserId && loading && <div className="muted">Učitavanje…</div>}
-      {selectedUserId && err && <div className="error">{err}</div>}
+      <div className="events-scroll">
+        {!selectedUserId && <div className="muted">Izaberi člana tima sa leve strane.</div>}
+        {selectedUserId && loading && <div className="muted">Učitavanje…</div>}
+        {selectedUserId && err && <div className="error">{err}</div>}
 
-      {selectedUserId && !loading && !err && events.length === 0 && (
-        <div className="muted">Nema događaja za ovog člana.</div>
-      )}
+        {selectedUserId && !loading && !err && events.length === 0 && (
+          <div className="muted">Nema događaja za ovog člana.</div>
+        )}
 
-      {selectedUserId && !loading && !err && events.map(ev => (
-        <EventCard key={ev.id} name={ev.name} starts_at={ev.starts_at} />
-      ))}
+        {selectedUserId && !loading && !err && events.map(ev => (
+          <EventCard
+            key={ev.id}
+            name={ev.name}
+            starts_at={ev.starts_at}
+            selected={currentEventId === ev.id}
+          onClick={() => onSelectEvent?.(ev.id)}
+          />
+        ))}
+      </div>
+      
 
       {/* „+” samo na sopstvenom profilu */}
       {viewingOwn && (

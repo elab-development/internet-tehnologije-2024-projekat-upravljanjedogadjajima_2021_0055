@@ -117,6 +117,21 @@ export async function getEvents() {
   }
 }
 
+export async function getEventById(eventId) {
+  const id = Number(eventId?.id ?? eventId);
+  if (!Number.isFinite(id)) throw new Error("Invalid eventId");
+
+  try {
+    return await http.get(`/api/events/${id}`);
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.get(`/events/${id}`);
+    }
+    throw e;
+  }
+}
+
+
 export async function createEvent(body) {
   try {
     return await http.post("/api/events", body);

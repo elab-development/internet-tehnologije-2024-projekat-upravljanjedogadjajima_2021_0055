@@ -1,13 +1,18 @@
-export default function EventCard({ name, starts_at }) {
+export default function EventCard({ name, starts_at, onClick, selected = false }) {
   const { day, time } = formatStarts(starts_at);
+
   return (
-    <div className="event-card">
+    <button
+      type="button"
+      className={`event-card ${selected ? "is-selected" : ""}`}
+      onClick={onClick}
+    >
       <div className="event-title">{name}</div>
       <div className="event-when">
         <div className="event-day">{day}</div>
         <div className="event-time">{time}</div>
       </div>
-    </div>
+    </button>
   );
 }
 
