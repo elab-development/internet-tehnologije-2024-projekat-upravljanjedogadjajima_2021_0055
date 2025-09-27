@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { getEventsByUser, createEvent } from "../api/endpoints";
+import { getEventsByUser, createEvent, updateEvent, deleteEvent } from "../api/endpoints";
 import EventCard from "./EventCard";
 import Modal from "./Modal";
 import EventForm from "./EventForm";
 import { useAuth } from "../auth/AuthContext";
 import addEventIcon from "../assets/add-event.png";
+import editEventIcon from "../assets/edit-event.png";
+import deleteEventIcon from "../assets/delete-event.png";
 
 export default function EventsPanel({ selectedUserId, onSelectEvent, currentEventId }) {
   const { user } = useAuth();
   const authUserId = user?.id;
+  const isAdmin = user?.role === "admin";
 
-  // normalizacija id-a (broj ili objekat sa .id)
+  // normalizacija id-a
   const normId = (v) => Number(v?.id ?? v);
 
-  // „+” samo kada korisnik gleda sopstveni profil
+  // + samo kada korisnik gleda sopstveni profil
   const viewingOwn = useMemo(() => {
     const sel = normId(selectedUserId);
     const me  = normId(authUserId);
@@ -26,9 +29,11 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
 
   // modal state
   const [openAdd, setOpenAdd] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // helper: učitaj listu ZA DATOG usera (paginacija → res.data.data)
+  // helper: ucitaj listu ZA DATOG usera 
   const reload = async (uid) => {
     setLoading(true); setErr(null);
     try {
@@ -47,6 +52,12 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
     }
   };
 
+  const  selectedEvent = useMemo(
+    () => events.find(e => e.id === currentEventId) || null,
+    [events, currentEventId]
+  );
+  const canEditDelete = !!selectedEvent && (isAdmin || String(selectedEvent.user_id) === String(authUserId));
+
   // inicijalno/na promenu selekcije
   useEffect(() => {
     // nista nije izabrano → nema liste
@@ -59,7 +70,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
     reload(uid);
   }, [selectedUserId]);
 
-  // Kada kreiramo novi dogadjaj, dodajemo ga na listu i radimo reload
+  // kada kreiramo novi dogadjaj, dodajemo ga na listu i radimo reload
   const handleCreate = async (body) => {
     setSubmitting(true);
     try {
@@ -71,18 +82,63 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
 
       setOpenAdd(false);
 
-      // optimistički ubacimo na vrh ako gledaš sopstvenu listu
+      // optimisticki ubacimo na vrh 
       if (viewingOwn && created?.id) {
         setEvents(prev => [created, ...prev]);
       }
 
-      // i svakako refresujemo listu kao izvor istine
+      // refresh cele liste
       const uid = normId(selectedUserId);
       if (Number.isFinite(uid)) {
         await reload(uid);
       }
     } catch (e) {
       alert(e?.response?.data?.message || "Dodavanje nije uspelo.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = async (payload) => {
+    if (!selectedEvent?.id) return;
+    if (!canEditDelete) { alert("Nije dozvoljena izmena."); return; }
+
+    setSubmitting(true);
+    try {
+      await updateEvent(selectedEvent.id, payload);
+      setOpenEdit(false);
+
+      // refetch iste liste
+      const uid = Number(selectedUserId?.id ?? selectedUserId);
+      if (Number.isFinite(uid)) await reload(uid);
+
+      // osvezi detalje
+      onSelectEvent?.(null);
+      setTimeout(() => onSelectEvent?.(selectedEvent.id), 0);
+    } catch (e) {
+      alert(e?.response?.data?.message || "Izmena nije uspela.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedEvent?.id) return;
+    if (!canEditDelete) { alert("Nije dozvoljeno brisanje."); return; }
+
+    setSubmitting(true);
+    try {
+      await deleteEvent(selectedEvent.id);
+      setOpenDelete(false);
+
+      // refetch liste
+      const uid = Number(selectedUserId?.id ?? selectedUserId);
+      if (Number.isFinite(uid)) await reload(uid);
+
+      // obrisi selekciju (desni panel nestaje)
+      onSelectEvent?.(null);
+    } catch (e) {
+      alert(e?.response?.data?.message || "Brisanje nije uspelo.");
     } finally {
       setSubmitting(false);
     }
@@ -110,16 +166,54 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
         ))}
       </div>
       
+      <div className="event-actions">
+        {/* „+” samo na sopstvenom profilu */}
+        {viewingOwn && (
+          <button className="event-action-btn" onClick={() => setOpenAdd(true)} title="Novi događaj" type="button">
+            <img src={addEventIcon} alt="Dodaj događaj" />
+          </button>
+        )}
 
-      {/* „+” samo na sopstvenom profilu */}
-      {viewingOwn && (
-        <button className="event-add" onClick={() => setOpenAdd(true)} title="Novi događaj" type="button">
-          <img src={addEventIcon} alt="Dodaj događaj" />
+        {/* Edit – trazi selektovan event i permisiju */}
+        <button
+          className={`event-action-btn ${!canEditDelete ? "disabled" : ""}`}
+          title="Edit event"
+          type="button"
+          onClick={() => canEditDelete && setOpenEdit(true)}
+        >
+          <img src={editEventIcon} alt="Edit" />
         </button>
-      )}
+
+        {/* Delete – trazi selektovan event i permisiju */}
+        <button
+          className={`event-action-btn ${!canEditDelete ? "disabled" : ""}`}
+          title="Delete event"
+          type="button"
+          onClick={() => canEditDelete && setOpenDelete(true)}
+        >
+          <img src={deleteEventIcon} alt="Delete" />
+        </button>
+      </div>
 
       <Modal open={openAdd} onClose={() => !submitting && setOpenAdd(false)} title="Novi događaj">
         <EventForm onSubmit={handleCreate} submitting={submitting} />
+      </Modal>
+
+      <Modal open={openEdit} onClose={() => !submitting && setOpenEdit(false)} title={`Izmena: ${selectedEvent?.name || ""}`}>
+        <EventForm
+          mode="edit"
+          initial={selectedEvent || {}}
+          onSubmit={handleEdit}
+          submitting={submitting}
+        />
+      </Modal>
+
+      <Modal open={openDelete} onClose={() => !submitting && setOpenDelete(false)} title="Potvrda brisanja">
+        <p>Da li sigurno želiš da obrišeš događaj <b>{selectedEvent?.name}</b>?</p>
+        <div className="modal-footer">
+          <button className="btn" onClick={() => setOpenDelete(false)}>Odustani</button>
+          <button className="btn primary" onClick={handleDelete} disabled={!canEditDelete || submitting}>Obriši</button>
+        </div>
       </Modal>
     </section>
   );

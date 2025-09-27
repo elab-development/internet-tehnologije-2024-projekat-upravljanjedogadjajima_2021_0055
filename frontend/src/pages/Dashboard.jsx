@@ -12,7 +12,7 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  // lista članova i selekcija
+  // lista clanova i selekcija
   const [members, setMembers] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
 
@@ -24,7 +24,7 @@ export default function Dashboard() {
 
   const [selectedEventId, setSelectedEventId] = useState(null);
 
-  // učitavanje liste
+  // ucitavanje liste
   useEffect(() => {
     (async () => {
       const { data } = await getUsers();

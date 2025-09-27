@@ -3,7 +3,7 @@ import TextField from "./TextField";
 import AppButton from "./AppButton";
 import { getCategories } from "../api/endpoints";
 
-export default function EventForm({ onSubmit, submitting }) {
+export default function EventForm({ mode = "create", initial = {}, onSubmit, submitting }) {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");      // yyyy-mm-dd
   const [time, setTime] = useState("");      // hh:mm
@@ -17,12 +17,12 @@ export default function EventForm({ onSubmit, submitting }) {
 
   const [errors, setErrors] = useState({});
 
+  // ucitavanje kategorija
   useEffect(() => {
     (async () => {
       setCatLoading(true);
       try {
         const res = await getCategories();
-        // ✅ normalizuj bilo koji oblik odgovora
         const raw = res?.data;
         const arr = Array.isArray(raw)
           ? raw
@@ -32,8 +32,6 @@ export default function EventForm({ onSubmit, submitting }) {
               ? raw.categories
               : [];
         setCategories(arr);
-        // ako želiš auto-selekt prve:
-        // if (arr.length) setCategoryId(String(arr[0].id));
       } catch (e) {
         console.error("getCategories failed:", e);
         setCatErr("Ne mogu da učitam kategorije.");
@@ -42,6 +40,38 @@ export default function EventForm({ onSubmit, submitting }) {
       }
     })();
   }, []);
+
+  // drugacije ako je edit
+  useEffect(() => {
+    if (mode !== "edit") return;
+
+    setName(initial?.name ?? "");
+    setDescription(initial?.description ?? "");
+
+    // "YYYY-MM-DD HH:mm:ss" -> date + time
+    if (initial?.starts_at) {
+      const s = String(initial.starts_at).replace(" ", "T");
+      const d = new Date(s);
+      if (!isNaN(d)) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mi = String(d.getMinutes()).padStart(2, "0");
+        setDate(`${yyyy}-${mm}-${dd}`);
+        setTime(`${hh}:${mi}`);
+      }
+    }
+
+    // postavi kategoriju iz initial-a 
+    if (initial?.category_id) setCategoryId(String(initial.category_id));
+  }, [mode, initial]);
+
+  // ako nema kategorije iz initial-a, postavi prvu iz liste
+  useEffect(() => {
+    if (categoryId) return;                      
+    if (categories.length) setCategoryId(String(categories[0].id));
+  }, [categories, categoryId]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -55,6 +85,7 @@ export default function EventForm({ onSubmit, submitting }) {
 
     // Laravel format "YYYY-MM-DD HH:mm:ss"
     const starts_at = `${date} ${time}:00`;
+
     onSubmit?.({
       name,
       starts_at,
@@ -63,8 +94,13 @@ export default function EventForm({ onSubmit, submitting }) {
     });
   };
 
+  const submitLabel = submitting
+    ? (mode === "edit" ? "Čuvam…" : "Dodajem…")
+    : (mode === "edit" ? "Sačuvaj izmene" : "Dodaj događaj");
+
   return (
     <form onSubmit={submit}>
+
       <TextField
         label="Naziv"
         value={name}
@@ -123,7 +159,7 @@ export default function EventForm({ onSubmit, submitting }) {
       </div>
 
       <AppButton type="submit" disabled={submitting || !categories.length}>
-        {submitting ? "Dodajem..." : "Dodaj događaj"}
+        {submitLabel}
       </AppButton>
     </form>
   );

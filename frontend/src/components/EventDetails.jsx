@@ -51,9 +51,6 @@ export default function EventDetails({ eventId }) {
       <h3 className="details-heading">Category:</h3>
       <div className="pill">{ev.category?.name ?? "—"}</div>
 
-      <h3 className="details-heading">Created by:</h3>
-      <div className="pill">{ev.user?.name ?? "—"}</div>
-
       <h3 className="details-heading">Description:</h3>
       <div className="desc-box">{ev.description || "—"}</div>
     </div>

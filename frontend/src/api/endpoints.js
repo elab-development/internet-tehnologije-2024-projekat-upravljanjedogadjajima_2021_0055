@@ -143,6 +143,27 @@ export async function createEvent(body) {
   }
 }
 
+export async function updateEvent(id, body) {
+  try {
+    return await http.put(`/api/events/${id}`, body);
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.put(`/events/${id}`, body);
+    }
+    throw e;
+  }
+}
+
+export async function deleteEvent(id) {
+  try {
+    return await http.delete(`/api/events/${id}`);
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.delete(`/events/${id}`);
+    } throw e;
+  }
+}
+
 export async function getCategories() {
   try {
     return await http.get("/api/categories");
