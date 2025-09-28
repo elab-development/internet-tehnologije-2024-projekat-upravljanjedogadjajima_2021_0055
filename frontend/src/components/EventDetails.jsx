@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getEventById } from "../api/endpoints";
+import CategoryManagerModal from "./CategoryManagementModal";
 
 const toDate = s => {
   if (!s) return null;
@@ -11,6 +12,7 @@ export default function EventDetails({ eventId }) {
   const [ev, setEv] = useState(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
+  const [openCats, setOpenCats] = useState(false);
 
   useEffect(() => {
     if (!eventId){ setEv(null); return; }
@@ -48,11 +50,27 @@ export default function EventDetails({ eventId }) {
       <h3 className="details-heading">Starts at:</h3>
       <div className="pill">{day}<br/>{time}</div>
 
-      <h3 className="details-heading">Category:</h3>
+      <div className="details-row">
+        <h3 className="details-heading" style={{margin:0}}>Category:</h3>
+        <button
+          type="button"
+          className="inline-btn"
+          onClick={() => setOpenCats(true)}
+          title="Upravljaj kategorijama"
+        >
+          +
+        </button>
+      </div>
       <div className="pill">{ev.category?.name ?? "—"}</div>
 
       <h3 className="details-heading">Description:</h3>
       <div className="desc-box">{ev.description || "—"}</div>
+
+      <CategoryManagerModal
+        open={openCats}
+        onClose={() => setOpenCats(false)}
+        onChanged={() => {}}
+      />
     </div>
   );
 }

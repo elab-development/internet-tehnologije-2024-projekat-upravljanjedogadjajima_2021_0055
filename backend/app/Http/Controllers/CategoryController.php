@@ -50,8 +50,15 @@ class CategoryController extends Controller
     }
 
     // Brisanje kategorije
-    public function destroy(Category $category)
-    {
+    public function destroy(Request $request, Category $category)
+    {   
+        $auth = $request->user();
+        if($auth->role !== 'admin') {
+            return response()->json([
+                'error' => 'Only admins can delete categories!'
+            ], 403);
+        }
+
         if($category->events()->exists()) {
             return response()->json([
                 'error' => 'Cannot delete category with existing events!'

@@ -174,3 +174,25 @@ export async function getCategories() {
     throw e;
   }
 }
+
+export async function createCategory(body) {
+  try {
+    return await http.post("/api/categories", body);
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.post("/categories", body);
+    }
+    throw e;
+  }
+}
+
+export async function deleteCategory(id) {
+  try {
+    return await http.delete(`/api/categories/${id}`);
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.delete(`/categories/${id}`);
+    }
+    throw e;
+  }
+}
