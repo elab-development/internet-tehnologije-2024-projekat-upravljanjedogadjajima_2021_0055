@@ -4,9 +4,10 @@ import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
 import UserForm from "../components/UserForm";
 import AppButton from "../components/AppButton";
-import { getUsers, createUser, updateUser, deleteUser } from "../api/endpoints";
+import { getUsers, createUser, updateUser, deleteUser, exportEventsCsv } from "../api/endpoints";
 import EventsPanel from "../components/EventsPanel";
 import EventDetails from "../components/EventDetails";
+import exportIcon from "../assets/export-csv.png";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -23,6 +24,30 @@ export default function Dashboard() {
   const [submitting, setSubmitting] = useState(false);
 
   const [selectedEventId, setSelectedEventId] = useState(null);
+
+  // eksport state
+  const [downloading, setDownloading] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      setDownloading(true);
+      const res = await exportEventsCsv();
+      const blob = new Blob([res.data], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "events.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert(e?.response?.data?.message || "Export nije uspeo.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   // ucitavanje liste
   useEffect(() => {
@@ -106,7 +131,18 @@ export default function Dashboard() {
       />
 
       <main className="main-col">
-        <h1>Dobrodošao, {user?.name || user?.email} 👋</h1>
+        <div className="title-row">
+          <h1>Dobrodošao, {user?.name || user?.email} 👋</h1>
+          <button
+              className="export-btn"
+              onClick={handleExport}
+              title="Export CSV"
+              disabled={downloading}
+            >
+              <img src={exportIcon} alt="Export CSV" />
+            </button>
+        </div>
+        
         
         <EventsPanel
           selectedUserId={selectedId}

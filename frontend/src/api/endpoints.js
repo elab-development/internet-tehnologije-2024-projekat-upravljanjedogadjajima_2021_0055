@@ -196,3 +196,15 @@ export async function deleteCategory(id) {
     throw e;
   }
 }
+
+export async function exportEventsCsv() {
+  try {
+    return await http.get("/api/events/export/csv", { responseType: "blob" });
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.get("/events/export/csv", { responseType: "blob" });
+    }
+    throw e;
+  }
+}
+  
