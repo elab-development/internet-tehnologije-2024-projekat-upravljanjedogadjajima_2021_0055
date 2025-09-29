@@ -28,6 +28,9 @@ export default function Dashboard() {
   // eksport state
   const [downloading, setDownloading] = useState(false);
 
+  // pretraga state
+  const [search, setSearch] = useState("");
+
   const handleExport = async () => {
     try {
       setDownloading(true);
@@ -133,7 +136,15 @@ export default function Dashboard() {
       <main className="main-col">
         <div className="title-row">
           <h1>Dobrodošao, {user?.name || user?.email} 👋</h1>
-          <button
+
+          <div className="title-actions">
+            <input
+              className="search-input"
+              placeholder="🔍 Pretraga"
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
+            />
+            <button
               className="export-btn"
               onClick={handleExport}
               title="Export CSV"
@@ -141,6 +152,7 @@ export default function Dashboard() {
             >
               <img src={exportIcon} alt="Export CSV" />
             </button>
+          </div>
         </div>
         
         
@@ -148,6 +160,7 @@ export default function Dashboard() {
           selectedUserId={selectedId}
           currentEventId={selectedEventId}
           onSelectEvent={setSelectedEventId}
+          q = {search.trim()}
         />
 
       </main>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getEventsByUser, createEvent, updateEvent, deleteEvent } from "../api/endpoints";
+import { listEvents, createEvent, updateEvent, deleteEvent } from "../api/endpoints";
 import EventCard from "./EventCard";
 import Modal from "./Modal";
 import EventForm from "./EventForm";
@@ -7,44 +7,56 @@ import { useAuth } from "../auth/AuthContext";
 import addEventIcon from "../assets/add-event.png";
 import editEventIcon from "../assets/edit-event.png";
 import deleteEventIcon from "../assets/delete-event.png";
+import usePagination from "../hooks/usePagination";
 
-export default function EventsPanel({ selectedUserId, onSelectEvent, currentEventId }) {
+// Dodali smo opcioni tekst pretrage
+export default function EventsPanel({ selectedUserId, onSelectEvent, currentEventId, q = "" }) {
   const { user } = useAuth();
   const authUserId = user?.id;
   const isAdmin = user?.role === "admin";
 
-  // normalizacija id-a
   const normId = (v) => Number(v?.id ?? v);
+  const uid = normId(selectedUserId);
 
-  // + samo kada korisnik gleda sopstveni profil
+  // + samo kada gledas sopstveni profil
   const viewingOwn = useMemo(() => {
-    const sel = normId(selectedUserId);
-    const me  = normId(authUserId);
-    return Number.isFinite(sel) && Number.isFinite(me) && String(sel) === String(me);
-  }, [selectedUserId, authUserId]);
+    const me = normId(authUserId);
+    return Number.isFinite(uid) && Number.isFinite(me) && String(uid) === String(me);
+  }, [uid, authUserId]);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
 
-  // modal state
+  // modali
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // helper: ucitaj listu ZA DATOG usera 
-  const reload = async (uid) => {
+  // PAGINATION hook
+  // Ocekuje se da hook vraca bar: { page, setPage, setFromMeta, reset, hasMore }
+  const { page, setPage, setFromMeta, reset, hasMore } = usePagination(1);
+
+  // izabrani event i permisije
+  const selectedEvent = useMemo(
+    () => events.find(e => e.id === currentEventId) || null,
+    [events, currentEventId]
+  );
+  const canEditDelete = !!selectedEvent && (isAdmin || String(selectedEvent.user_id) === String(authUserId));
+
+  // Refresh prve strane pri manipulaciji sa korisnicima, eventima idt.
+  const fetchFirstPage = async () => {
+    if (!Number.isFinite(uid)) { setEvents([]); return; }
     setLoading(true); setErr(null);
     try {
-      const res = await getEventsByUser(uid);
-      const raw = res?.data;
-      const arr = Array.isArray(raw?.data) ? raw.data   // paginator
-                : Array.isArray(raw)      ? raw
-                : Array.isArray(raw?.events) ? raw.events
-                : Array.isArray(raw?.data?.data) ? raw.data.data
-                : [];
+      const res = await listEvents({ user_id: uid, page: 1, per_page: 15, q: q || undefined });
+      const raw = res?.data || {};
+      const arr = Array.isArray(raw?.data) ? raw.data
+                : Array.isArray(raw) ? raw : [];
       setEvents(arr);
+      setFromMeta(raw);                          // postavljamo last_page i sl.
+      setPage(Number(raw?.current_page ?? 1));   
     } catch {
       setErr("Ne mogu da učitam događaje.");
     } finally {
@@ -52,46 +64,49 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
     }
   };
 
-  const  selectedEvent = useMemo(
-    () => events.find(e => e.id === currentEventId) || null,
-    [events, currentEventId]
-  );
-  const canEditDelete = !!selectedEvent && (isAdmin || String(selectedEvent.user_id) === String(authUserId));
+  // Kada kliknemo load more ucitavamo sledecu stranu
+  const loadMore = async () => {
+    if (!Number.isFinite(uid)) return;
+    const nextPage = page + 1;
+    setLoading(true);
+    try {
+      const res = await listEvents({ user_id: uid, page: nextPage, per_page: 15, q: q || undefined });
+      const raw = res?.data || {};
+      const arr = Array.isArray(raw?.data) ? raw.data
+                : Array.isArray(raw) ? raw : [];
+      setEvents(prev => [...prev, ...arr]);
+      setFromMeta(raw);
+      setPage(Number(raw?.current_page ?? nextPage));
+    } catch {
+      setErr("Ne mogu da učitam događaje.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // inicijalno/na promenu selekcije
+  // Inicijalno i na promenu user-a ili query-ja refreshujemo i povlacimo podatke za prvu stranu
   useEffect(() => {
-    // nista nije izabrano → nema liste
     if (!selectedUserId) { setEvents([]); return; }
+    reset();
+    fetchFirstPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUserId, q]);
 
-    // ako je slucajno stigao objekat, uzmi .id
-    const uid = normId(selectedUserId);
-    if (!Number.isFinite(uid)) { setErr("Nepoznat korisnik."); setEvents([]); return; }
-
-    reload(uid);
-  }, [selectedUserId]);
-
-  // kada kreiramo novi dogadjaj, dodajemo ga na listu i radimo reload
+  // Kreiranje, izmena, brisanje dogadjaja i refresh liste
   const handleCreate = async (body) => {
     setSubmitting(true);
     try {
-      const me = normId(authUserId);
-      body.user_id = me;
-
+      body.user_id = normId(authUserId);
       const res = await createEvent(body);
       const created = res?.data;
-
       setOpenAdd(false);
 
-      // optimisticki ubacimo na vrh 
+      // optimisticki ubacujemo novi dogadjaj na pocetak liste
       if (viewingOwn && created?.id) {
         setEvents(prev => [created, ...prev]);
       }
-
-      // refresh cele liste
-      const uid = normId(selectedUserId);
-      if (Number.isFinite(uid)) {
-        await reload(uid);
-      }
+      // the moment of truth
+      await fetchFirstPage();
     } catch (e) {
       alert(e?.response?.data?.message || "Dodavanje nije uspelo.");
     } finally {
@@ -102,17 +117,13 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
   const handleEdit = async (payload) => {
     if (!selectedEvent?.id) return;
     if (!canEditDelete) { alert("Nije dozvoljena izmena."); return; }
-
     setSubmitting(true);
     try {
       await updateEvent(selectedEvent.id, payload);
       setOpenEdit(false);
+      await fetchFirstPage();
 
-      // refetch iste liste
-      const uid = Number(selectedUserId?.id ?? selectedUserId);
-      if (Number.isFinite(uid)) await reload(uid);
-
-      // osvezi detalje
+      // osvezavamo detalje u desnom panelu
       onSelectEvent?.(null);
       setTimeout(() => onSelectEvent?.(selectedEvent.id), 0);
     } catch (e) {
@@ -125,18 +136,12 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
   const handleDelete = async () => {
     if (!selectedEvent?.id) return;
     if (!canEditDelete) { alert("Nije dozvoljeno brisanje."); return; }
-
     setSubmitting(true);
     try {
       await deleteEvent(selectedEvent.id);
       setOpenDelete(false);
-
-      // refetch liste
-      const uid = Number(selectedUserId?.id ?? selectedUserId);
-      if (Number.isFinite(uid)) await reload(uid);
-
-      // obrisi selekciju (desni panel nestaje)
-      onSelectEvent?.(null);
+      await fetchFirstPage();
+      onSelectEvent?.(null); // skini detalje
     } catch (e) {
       alert(e?.response?.data?.message || "Brisanje nije uspelo.");
     } finally {
@@ -161,20 +166,31 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
             name={ev.name}
             starts_at={ev.starts_at}
             selected={currentEventId === ev.id}
-          onClick={() => onSelectEvent?.(ev.id)}
+            onClick={() => onSelectEvent?.(ev.id)}
           />
         ))}
       </div>
-      
+
+      {/* Load more dugme */}
+      {Number.isFinite(uid) && !loading && events.length > 0 && (
+        <button
+          className="events-loadmore"
+          type="button"
+          onClick={loadMore}
+          disabled={!Number.isFinite(uid) || !events.length || !hasMore}
+          title={hasMore ? "Učitaj još" : "Nema više"}
+        >
+          {hasMore ? "Učitaj još" : "Kraj liste"}
+        </button>
+      )}
+
+    
       <div className="event-actions">
-        {/* „+” samo na sopstvenom profilu */}
         {viewingOwn && (
           <button className="event-action-btn" onClick={() => setOpenAdd(true)} title="Novi događaj" type="button">
             <img src={addEventIcon} alt="Dodaj događaj" />
           </button>
         )}
-
-        {/* Edit – trazi selektovan event i permisiju */}
         <button
           className={`event-action-btn ${!canEditDelete ? "disabled" : ""}`}
           title="Edit event"
@@ -183,8 +199,6 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
         >
           <img src={editEventIcon} alt="Edit" />
         </button>
-
-        {/* Delete – trazi selektovan event i permisiju */}
         <button
           className={`event-action-btn ${!canEditDelete ? "disabled" : ""}`}
           title="Delete event"
@@ -195,6 +209,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
         </button>
       </div>
 
+      {/* Modali */}
       <Modal open={openAdd} onClose={() => !submitting && setOpenAdd(false)} title="Novi događaj">
         <EventForm onSubmit={handleCreate} submitting={submitting} />
       </Modal>

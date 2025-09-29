@@ -131,6 +131,17 @@ export async function getEventById(eventId) {
   }
 }
 
+export async function listEvents(params = {}) {
+  try {
+    return await http.get("/api/events", { params });
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      return await http.get("/events", { params });
+    }
+    throw e;
+  }
+}
+
 
 export async function createEvent(body) {
   try {

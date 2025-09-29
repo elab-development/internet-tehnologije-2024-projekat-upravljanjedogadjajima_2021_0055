@@ -256,7 +256,7 @@ body{margin:0;font-family:'Montserrat', Inter, system-ui, Segoe UI, Arial, sans-
   bottom: 12px;
   display: flex;
   gap: 12px;
-  width: 95%;
+  width: 93%;
   justify-content: flex-end;
 }
 .event-action-btn {
@@ -415,3 +415,31 @@ podelili na tri kolone. */
 .export-btn img{ width: 44px; height: 44px; display:block; }
 .export-btn:hover{ transform: scale(1.07); }
 .export-btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+.title-actions{ display:flex; align-items:center; gap:10px; }
+.search-input{
+  width: 150px;
+  padding: 10px 12px;
+  border: 0; border-radius: 12px;
+  background: #1293ad22;
+  outline: 2px solid transparent;
+  transition: .15s;
+  font-size: 14px;
+}
+.search-input:focus{ outline:2px solid var(--primary); }
+
+.events-loadmore{
+  position: absolute;
+  left: 12px; bottom: 12px;
+  padding: 10px 14px;
+  margin-left: 12px;
+  height: 48px;
+  border: 0; border-radius: 12px;
+  background: #fff; color: var(--primary); font-weight: 800;
+  box-shadow: 0 8px 22px rgba(0,0,0,.25);
+  cursor: pointer;
+  transition: transform .15s cubic-bezier(.4,2,.6,1), opacity .15s;
+  z-index: 2;
+}
+.events-loadmore:hover{ transform: scale(1.05); }
+.events-loadmore:disabled{ opacity:.6; cursor:not-allowed; }

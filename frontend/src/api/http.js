@@ -15,7 +15,7 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-// Ako backend vrati 401, očisti lokalni token
+// Ako backend vrati 401, ocisti lokalni token
 http.interceptors.response.use(
   (res) => res,
   (err) => {

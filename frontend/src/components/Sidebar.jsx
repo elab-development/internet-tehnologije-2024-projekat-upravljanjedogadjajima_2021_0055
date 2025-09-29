@@ -25,12 +25,12 @@ export default function Sidebar({
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
-  // Učitavanje korisnika
+  // Ucitavanje korisnika
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const { data } = await getUsers(); // očekuje [{id, name, email, role, ...}]
+        const { data } = await getUsers(); // ocekuje [{id, name, email, role, ...}]
         setMembers(data || []);
         if (!selectedId && data?.length) onSelect?.(data[0].id);
       } catch {
