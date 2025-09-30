@@ -284,7 +284,16 @@ select.field-input.select {
 
 .right-col{ padding:16px; }
 .details-panel{ background:#fff; border-radius:16px; padding:16px; box-shadow:var(--shadow) }
-.details-heading{ text-align:center; color:var(--primary); margin:8px 0 6px; font-weight:800 }
+.details-heading{
+  text-align: center;
+  color: var(--primary);
+  margin: 8px 0 6px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
 .pill{
   background:var(--primary); color:#fff; font-weight:800; text-align:center;
   padding:10px 12px; border-radius:22px; margin-bottom:10px;
@@ -443,3 +452,11 @@ podelili na tri kolone. */
 }
 .events-loadmore:hover{ transform: scale(1.05); }
 .events-loadmore:disabled{ opacity:.6; cursor:not-allowed; }
+
+.holiday-star{ margin-left: 6px; font-size: 12px; vertical-align: middle;}
+
+.details-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

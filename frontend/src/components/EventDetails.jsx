@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEventById } from "../api/endpoints";
 import CategoryManagerModal from "./CategoryManagementModal";
+import usePublicHolidays from "../hooks/usePublicHolidays";
 
 const toDate = s => {
   if (!s) return null;
@@ -10,9 +11,13 @@ const toDate = s => {
 
 export default function EventDetails({ eventId }) {
   const [ev, setEv] = useState(null);
+  const dateOnly = ev?.starts_at ? String(ev.starts_at).slice(0, 10) : null;
+  const year = dateOnly ? Number(dateOnly.slice(0, 4)) : new Date().getFullYear();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
   const [openCats, setOpenCats] = useState(false);
+  const { isHoliday, getHoliday } = usePublicHolidays(year);
+  const holiday = dateOnly && isHoliday(dateOnly) ? getHoliday(dateOnly) : null;
 
   useEffect(() => {
     if (!eventId){ setEv(null); return; }
@@ -47,7 +52,13 @@ export default function EventDetails({ eventId }) {
       <h3 className="details-heading">Event name:</h3>
       <div className="pill">{ev.name}</div>
 
-      <h3 className="details-heading">Starts at:</h3>
+      <h3 className="details-heading">Starts at:
+        {holiday && (
+          <span className="holiday-star" title={`Praznik: ${holiday.localName}`}>
+            ⭐
+          </span>
+        )}
+      </h3>
       <div className="pill">{day}<br/>{time}</div>
 
       <div className="details-row">
