@@ -4,4 +4,4 @@ export default function AppButton({ children, onClick, type="button", variant="p
       {children}
     </button>
   );
-}
+} // Generalno dugme koje se koristi u aplikaciji

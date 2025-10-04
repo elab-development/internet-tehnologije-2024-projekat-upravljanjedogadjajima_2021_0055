@@ -17,11 +17,11 @@ class Event extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);  // Događaj pripada korisniku
+        return $this->belongsTo(User::class);  // Dogadjaj pripada korisniku
     }
 
     public function category()
     {
-        return $this->belongsTo(Category::class);  // Događaj pripada kategoriji
+        return $this->belongsTo(Category::class);  // Dogadjaj pripada kategoriji
     }
 }

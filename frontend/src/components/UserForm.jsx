@@ -55,7 +55,7 @@ export default function UserForm({ mode="create", initial={}, onSubmit, submitti
       <TextField label="Telefon" name="phone_number" value={form.phone_number} onChange={onChange} />
 
 
-      {/* Šifra obavezna samo kod kreiranja; kod izmene je opciona */}
+      {/* Sifra obavezna samo kod kreiranja; kod izmene je opciona */}
       <TextField label="Lozinka" name="password" type="password" value={form.password}
                  onChange={onChange} error={errors.password} />
       <TextField label="Potvrdi lozinku" name="password_confirmation" type="password"

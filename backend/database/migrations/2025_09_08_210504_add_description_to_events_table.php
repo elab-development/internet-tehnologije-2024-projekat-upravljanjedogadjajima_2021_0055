@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('events', function (Blueprint $table) {
             Schema::table('events', function (Blueprint $table) {
-            $table->text('description')->nullable()->after('name'); // dodaj posle 'name'
+            $table->text('description')->nullable()->after('name'); // Dodaje kolonu description
             });
         });
     }

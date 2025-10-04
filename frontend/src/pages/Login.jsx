@@ -10,13 +10,18 @@ import logo from "../assets/Aurora.png";
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loginGuest } = useAuth();
   const nav = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "", remember: true });
   const [errors, setErrors] = useState({});
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const handleGuest = () => {
+    loginGuest();
+    nav("/dashboard");
+  }
 
   const onChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -95,6 +100,9 @@ export default function Login() {
           <AppButton type="submit" disabled={loading}>
             {loading ? "Ulogujem..." : "Uloguj me"}
           </AppButton>
+          <button type="button" className="guest-btn" onClick={handleGuest} disabled={loading}>
+            Pristupi kao gost
+          </button>
         </form>
       </Card>
     </div>

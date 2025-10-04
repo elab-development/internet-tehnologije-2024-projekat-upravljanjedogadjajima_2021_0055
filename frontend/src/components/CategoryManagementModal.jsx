@@ -5,16 +5,17 @@ import { useAuth } from "../auth/AuthContext";
 import { getCategories, createCategory, deleteCategory } from "../api/endpoints";
 
 export default function CategoryManagerModal({ open, onClose, onChanged }) {
-  const { user } = useAuth();
+  const { user } = useAuth(); // proveravamo da li je korisnik admin
   const isAdmin = user?.role === "admin" || user?.role === 1;
 
-  const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState(null);
+  const [list, setList] = useState([]); // lista kategorija
+  const [loading, setLoading] = useState(false); // indikator ucitavanja
+  const [err, setErr] = useState(null); // greska prilikom ucitavanja
 
-  const [newName, setNewName] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [newName, setNewName] = useState(""); // novo ime kategorije
+  const [submitting, setSubmitting] = useState(false); // indikator slanja zahteva
 
+  // Ucitavanje kateogorija
   const load = async () => {
     setLoading(true); setErr(null);
     try {
@@ -23,7 +24,7 @@ export default function CategoryManagerModal({ open, onClose, onChanged }) {
       const arr = Array.isArray(raw) ? raw
                 : Array.isArray(raw?.data) ? raw.data
                 : Array.isArray(raw?.categories) ? raw.categories
-                : [];
+                : []; // proveravamo nekoliko mogucih formata podataka od servera
       setList(arr);
     } catch (e) {
       setErr("Ne mogu da učitam kategorije.");
@@ -32,17 +33,17 @@ export default function CategoryManagerModal({ open, onClose, onChanged }) {
     }
   };
 
-  useEffect(() => { if (open) load(); }, [open]);
+  useEffect(() => { if (open) load(); }, [open]); // ucitavamo kategorije kada se modal otvori
 
   const handleAdd = async (e) => {
-    e?.preventDefault?.();
+    e?.preventDefault?.(); 
     const name = newName.trim();
-    if (!name) return;
+    if (!name) return; // prazno ime nije dozvoljeno
 
     setSubmitting(true);
     try {
       await createCategory({ name });
-      setNewName("");
+      setNewName(""); // cistimo input
       await load();
       onChanged?.();
     } catch (e) {

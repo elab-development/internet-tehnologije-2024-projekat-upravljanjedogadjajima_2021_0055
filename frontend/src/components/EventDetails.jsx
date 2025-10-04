@@ -4,20 +4,20 @@ import CategoryManagerModal from "./CategoryManagementModal";
 import usePublicHolidays from "../hooks/usePublicHolidays";
 
 const toDate = s => {
-  if (!s) return null;
+  if (!s) return null; 
   const d = new Date(String(s).replace(" ", "T"));
   return isNaN(d) ? null : d;
 };
 
 export default function EventDetails({ eventId }) {
-  const [ev, setEv] = useState(null);
-  const dateOnly = ev?.starts_at ? String(ev.starts_at).slice(0, 10) : null;
-  const year = dateOnly ? Number(dateOnly.slice(0, 4)) : new Date().getFullYear();
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState(null);
-  const [openCats, setOpenCats] = useState(false);
-  const { isHoliday, getHoliday } = usePublicHolidays(year);
-  const holiday = dateOnly && isHoliday(dateOnly) ? getHoliday(dateOnly) : null;
+  const [ev, setEv] = useState(null); // detalji o dogadjaju
+  const dateOnly = ev?.starts_at ? String(ev.starts_at).slice(0, 10) : null; // "YYYY-MM-DD"
+  const year = dateOnly ? Number(dateOnly.slice(0, 4)) : new Date().getFullYear(); // odredjivanje godine
+  const [loading, setLoading] = useState(false); // indikator ucitavanja
+  const [err, setErr] = useState(null); // greska prilikom ucitavanja
+  const [openCats, setOpenCats] = useState(false); // upravljanje kategorijama
+  const { isHoliday, getHoliday } = usePublicHolidays(year); // ucitavanje praznika za tu godinu
+  const holiday = dateOnly && isHoliday(dateOnly) ? getHoliday(dateOnly) : null; // ako je praznik, dobijamo detalje
 
   useEffect(() => {
     if (!eventId){ setEv(null); return; }
@@ -28,7 +28,7 @@ export default function EventDetails({ eventId }) {
       .catch(()  => { if (alive) setErr("Ne mogu da učitam detalje."); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [eventId]);
+  }, [eventId]); // ucitavanje detalja kada se promeni eventId
 
   if (!eventId)  return <div className="muted">Klikni događaj da vidiš detalje.</div>;
   if (loading)   return <div className="muted">Učitavanje detalja…</div>;

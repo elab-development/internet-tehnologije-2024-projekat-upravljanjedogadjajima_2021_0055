@@ -7,9 +7,6 @@ import editIcon from "../assets/edit-user.png";
 import deleteIcon from "../assets/delete-user.png";
 import logoutIcon from "../assets/logout.png";
 
-
-
-
 export default function Sidebar({
   selectedId,
   onSelect,

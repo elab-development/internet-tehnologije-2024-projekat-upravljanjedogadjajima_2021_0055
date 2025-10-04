@@ -46,4 +46,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware('auth:sanctum')->get('/events/export/csv', [EventController::class, 'exportCsv']);
 
-Route::get('/holidays/{year}/RS', [HolidaysController::class, 'rs']);
+Route::get('/holidays/{year}/RS', [HolidaysController::class, 'rs']); // Dodata javna ruta za praznike Srbije

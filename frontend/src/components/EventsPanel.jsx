@@ -14,6 +14,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
   const { user } = useAuth();
   const authUserId = user?.id;
   const isAdmin = user?.role === "admin";
+  const isViewer = user?.role === "viewer"; 
 
   const normId = (v) => Number(v?.id ?? v);
   const uid = normId(selectedUserId);
@@ -43,7 +44,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
     () => events.find(e => e.id === currentEventId) || null,
     [events, currentEventId]
   );
-  const canEditDelete = !!selectedEvent && (isAdmin || String(selectedEvent.user_id) === String(authUserId));
+  const canEditDelete = !!selectedEvent && !isViewer && (isAdmin || String(selectedEvent.user_id) === String(authUserId));
 
   // Refresh prve strane pri manipulaciji sa korisnicima, eventima idt.
   const fetchFirstPage = async () => {
@@ -89,11 +90,12 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
     if (!selectedUserId) { setEvents([]); return; }
     reset();
     fetchFirstPage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [selectedUserId, q]);
 
   // Kreiranje, izmena, brisanje dogadjaja i refresh liste
   const handleCreate = async (body) => {
+    if (isViewer) { alert("Nije dozvoljeno dodavanje."); return; }
     setSubmitting(true);
     try {
       body.user_id = normId(authUserId);
@@ -115,6 +117,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
   };
 
   const handleEdit = async (payload) => {
+    if (isViewer) { alert("Nije dozvoljena izmena."); return; }
     if (!selectedEvent?.id) return;
     if (!canEditDelete) { alert("Nije dozvoljena izmena."); return; }
     setSubmitting(true);
@@ -134,6 +137,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
   };
 
   const handleDelete = async () => {
+    if (isViewer) { alert("Nije dozvoljeno brisanje."); return; }
     if (!selectedEvent?.id) return;
     if (!canEditDelete) { alert("Nije dozvoljeno brisanje."); return; }
     setSubmitting(true);
@@ -186,7 +190,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
 
     
       <div className="event-actions">
-        {viewingOwn && (
+        {viewingOwn && !isViewer && (
           <button className="event-action-btn" onClick={() => setOpenAdd(true)} title="Novi događaj" type="button">
             <img src={addEventIcon} alt="Dodaj događaj" />
           </button>
@@ -195,6 +199,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
           className={`event-action-btn ${!canEditDelete ? "disabled" : ""}`}
           title="Edit event"
           type="button"
+          disabled={!canEditDelete}
           onClick={() => canEditDelete && setOpenEdit(true)}
         >
           <img src={editEventIcon} alt="Edit" />
@@ -203,6 +208,7 @@ export default function EventsPanel({ selectedUserId, onSelectEvent, currentEven
           className={`event-action-btn ${!canEditDelete ? "disabled" : ""}`}
           title="Delete event"
           type="button"
+          disabled={!canEditDelete}
           onClick={() => canEditDelete && setOpenDelete(true)}
         >
           <img src={deleteEventIcon} alt="Delete" />

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->index('category_id'); // non-unique index
         });
 
-        // 3) VRATI FOREIGN KEY (sad će da koristi non-unique indeks)
+        // vracamo foreign key constraint
         Schema::table('events', function (Blueprint $table) {
             $table->foreign('category_id')
                   ->references('id')->on('categories')

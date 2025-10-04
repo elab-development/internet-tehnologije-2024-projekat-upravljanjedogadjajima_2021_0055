@@ -13,6 +13,6 @@ class Category extends Model
 
     public function events()
     {
-        return $this->hasMany(Event::class);  // Kategorija ima mnogo događaja
+        return $this->hasMany(Event::class);  // Kategorija ima mnogo dogadjaja
     }
 }
